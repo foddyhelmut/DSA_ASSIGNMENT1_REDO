@@ -83,4 +83,28 @@ service /programs on new http:Listener(8080) {
     resource function get programs() returns Program[] | error {
         return programs.toArray(); 
     }
+
+    resource function put programs/program_code/[string program_code](Program updatedProgram) returns Program |ProgramNotFound{
+        //check if the program_code exits in the programs table
+        if (programs.hasKey(program_code)) {
+            Program existingProgram = <Program> programs[program_code];
+            //existingProgram.program_code = updatedProgram.program_code;
+            existingProgram.nqf_level = updatedProgram.nqf_level;
+            existingProgram.faculty = updatedProgram.faculty;
+            existingProgram.department = updatedProgram.department;
+            existingProgram.title = updatedProgram.title;
+            existingProgram.courses = updatedProgram.courses;
+
+            return existingProgram;
+            
+    }else {
+        // if program does not exist return error message
+        ProgramNotFound notFoundError = {
+            body: {message: "Program noot found for specified program"}
+        };
+        return notFoundError;
+
+    }
+    
+}
 }
