@@ -105,6 +105,33 @@ service /programs on new http:Listener(8080) {
         return notFoundError;
 
     }
-    
 }
+    resource function get prgrams/program_code/[string program_code]() returns Program[] | ProgramNotFound {
+       Program[] matchingPrograms = [];
+        foreach var programs in programs.toArray() {
+            if (programs.program_code == program_code) {
+                matchingPrograms.push(programs);
+            }
+        }
+        if (matchingPrograms.length() == 0) {
+            ProgramNotFound missing = {
+                body: {message: "The specified Program Code does not match any Program, please specify a valid Program Code"}
+            };
+            return missing;
+        }
+        return matchingPrograms;
+    }
+
+     // Delete a programme's record by program code
+    resource function delete deleteProgram(http:Caller caller, http:Request req, string program_code) returns error? {
+        if !programs.hasKey(program_code) {
+            check caller->respond({ "error": "Program not found." });
+            return;
+        }
+        // Corrected line with proper handling of the remove function's return value
+        _ = programs.remove(program_code);
+        check caller->respond({ "message": "Program deleted successfully." });
+    }
+
 }
+
